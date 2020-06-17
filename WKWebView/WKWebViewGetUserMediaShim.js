@@ -1,4 +1,3 @@
-document.body.style = 'border: 20px solid yellow';
 (function (exports) {
   exports.navigator.mediaDevices = {}
   exports.navigator.mediaDevices.getUserMedia = getUserMedia
@@ -12,7 +11,6 @@ document.body.style = 'border: 20px solid yellow';
 
   getUserMedia._onmedia = function (kind, data) {
     var tracksByKind = tracks[kind]
-      console.log('getUserMedia._onmedia', kind, data)
 
     if (kind === 'audio') {
       data = new Float32Array(base64ToData(data))
@@ -22,13 +20,11 @@ document.body.style = 'border: 20px solid yellow';
 
     for (var i in tracksByKind) {
       var track = tracksByKind[i]
-        console.log(track)
       track._ondataavailable && track._ondataavailable(data)
     }
   }
 
   function getUserMedia (constraints, successCallback, errorCallback) {
-    document.body.style = 'border: 20px solid red';
     let promise = new Promise(function(resolve, reject) {
       postMessage('WKWebViewGetUserMediaShim_MediaStream_new', constraints, function (trackData) {
         var stream = new MediaStream()
@@ -88,7 +84,6 @@ document.body.style = 'border: 20px solid yellow';
 
     for (var i in this._connections) {
       var connection = this._connections[i]
-        console.log(evt)
       connection.onaudioprocess && connection.onaudioprocess(evt)
     }
   }

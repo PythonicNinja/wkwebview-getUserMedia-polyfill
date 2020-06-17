@@ -19,7 +19,7 @@ class ViewController: UIViewController, WKUIDelegate {
         
         check_record_permission()
         
-        let myURL = URL(string: "https://api.voxm.live/p/1103")
+        let myURL = URL(string: "https://api-staging.voxm.live/p/1103")
         let myRequest = URLRequest(url: myURL!)
         webView.load(myRequest)
         
