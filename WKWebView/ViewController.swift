@@ -16,9 +16,47 @@ class ViewController: UIViewController, WKUIDelegate {
         super.viewDidLoad()
         setupUI()
         setupNavItem()
-        let myURL = URL(string: "https://www.apple.com")
+        
+        check_record_permission()
+        
+        let myURL = URL(string: "https://api.voxm.live/p/1103")
         let myRequest = URLRequest(url: myURL!)
         webView.load(myRequest)
+        
+    }
+    
+    @IBOutlet var recordingTimeLabel: UILabel!
+    @IBOutlet var record_btn_ref: UIButton!
+    @IBOutlet var play_btn_ref: UIButton!
+
+    var audioRecorder: AVAudioRecorder!
+    var audioPlayer : AVAudioPlayer!
+    var meterTimer:Timer!
+    var isAudioRecordingGranted: Bool!
+    var isRecording = false
+    var isPlaying = false
+    
+    func check_record_permission()
+    {
+        switch AVAudioSession.sharedInstance().recordPermission {
+        case AVAudioSessionRecordPermission.granted:
+            isAudioRecordingGranted = true
+            break
+        case AVAudioSessionRecordPermission.denied:
+            isAudioRecordingGranted = false
+            break
+        case AVAudioSessionRecordPermission.undetermined:
+            AVAudioSession.sharedInstance().requestRecordPermission({ (allowed) in
+                    if allowed {
+                        self.isAudioRecordingGranted = true
+                    } else {
+                        self.isAudioRecordingGranted = false
+                    }
+            })
+            break
+        default:
+            break
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -39,10 +77,42 @@ class ViewController: UIViewController, WKUIDelegate {
         }
     }
     
+    func getMyJavaScript() -> String {
+        if let filepath = Bundle.main.path(forResource: "WKWebViewGetUserMediaShim", ofType: "js") {
+            do {
+                return try String(contentsOfFile: filepath)
+            } catch {
+                return ""
+            }
+        } else {
+           return ""
+        }
+    }
+
+    
     // MARK: - Properties
     lazy var webView: WKWebView = {
         let webConfiguration = WKWebViewConfiguration()
+        webConfiguration.allowsInlineMediaPlayback = true
+        webConfiguration.mediaTypesRequiringUserActionForPlayback = .video
+        let controller = WKUserContentController()
+        webConfiguration.userContentController = controller
+        
+//        let scriptSource = getMyJavaScript()
+//        let script = WKUserScript(
+//            source: "document.body.style = 'border: 20px solid red';",
+//            source: scriptSource,
+//            injectionTime: WKUserScriptInjectionTime.atDocumentStart,
+//            forMainFrameOnly: true
+//        )
+//        webConfiguration.userContentController.addUserScript(script)
+        
         let webView = WKWebView(frame: .zero, configuration: webConfiguration)
+        
+        // apply shim
+        WKWebViewGetUserMediaShim(webView: webView, contentController: controller)
+        
+
         webView.uiDelegate = self
         webView.translatesAutoresizingMaskIntoConstraints = false
         return webView
